@@ -1,0 +1,7 @@
+node_modules
+dist
+vault.db*
+.env
+.git
+.gitignore
+*.log
