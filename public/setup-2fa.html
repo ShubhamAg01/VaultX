@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VaultX — Enable 2FA</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" href="/favicon.svg" />
+    <link rel="stylesheet" href="/css/style.css" />
+</head>
+
+<body>
+    <div class="auth-page">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <img src="/logo.svg" height="26" alt="VaultX" />
+                </div>
+                <h1 class="auth-title">Two-Factor Authentication</h1>
+                <p class="auth-subtitle">Add hardware-backed TOTP security to your vault</p>
+            </div>
+
+                <div id="step-content">
+                    <div id="step-1">
+                        <div class="alert alert-info">
+                            <strong>Step 1:</strong> Prepare an authenticator application (e.g. Google Authenticator, 1Password, or 2FAS).
+                        </div>
+                        <button class="btn btn-primary" onclick="loadQR()">
+                            <span id="qr-btn-text">Begin Setup</span>
+                            <span id="qr-spinner" class="spinner hidden"></span>
+                        </button>
+                    </div>
+
+                    <div id="step-2" class="hidden">
+                        <p class="text-sm" style="margin-bottom:12px;color:var(--text-secondary);">
+                            <strong>Step 2:</strong> Scan this QR code with your authenticator app:
+                        </p>
+                        <div class="qr-wrapper" style="background:#fff;padding:12px;border-radius:8px;display:inline-block;border:1px solid var(--border);">
+                            <img id="qr-img" src="" alt="QR Code" style="display:block;max-width:200px;margin:0 auto;" />
+                        </div>
+                        <p class="text-sm text-muted" style="margin:16px 0 6px;">Or manually enter secret key:</p>
+                        <div class="font-mono text-sm" id="manual-key"
+                            style="background:var(--bg-subtle);border:1px solid var(--border);padding:8px 12px;border-radius:6px;word-break:break-all;color:var(--text-primary);letter-spacing:1px;font-size:12px;">
+                        </div>
+                        <button class="btn btn-primary" style="margin-top:16px;" onclick="showStep(3)">Next: Confirm Code</button>
+                    </div>
+
+                    <div id="step-3" class="hidden">
+                        <p class="text-sm" style="margin-bottom:16px;color:var(--text-secondary);">
+                            <strong>Step 3:</strong> Enter the 6-digit verification code from your authenticator:
+                        </p>
+                        <div id="setup-alert"></div>
+                        <div class="form-group">
+                            <input type="text" id="confirm-code" placeholder="000000" maxlength="6" inputmode="numeric"
+                                style="text-align:center;letter-spacing:8px;font-size:24px;font-family:var(--font-mono);" />
+                        </div>
+                        <button class="btn btn-primary" onclick="verifySetup()">
+                            <span id="verify-text">Activate 2FA</span>
+                            <span id="verify-spinner" class="spinner hidden"></span>
+                        </button>
+                    </div>
+
+                    <div id="step-done" class="hidden">
+                        <div class="alert alert-success">Two-Factor Authentication is now active.</div>
+                        <p class="text-sm text-muted" style="line-height:1.5;">Subsequent logins will require your 6-digit TOTP code in addition to your master password.</p>
+                        <a href="/dashboard" class="btn btn-primary" style="display:block;margin-top:16px;">Return to Vault</a>
+                    </div>
+                </div>
+
+                <div class="auth-link" style="margin-top:16px;">
+                    <a href="/dashboard">← Back to Vault</a>
+                </div>
+            </div>
+        </div>
+
+    <div id="toast-container"></div>
+    <script src="/js/icons.js"></script>
+    <script src="/js/crypto.js"></script>
+    <script src="/js/auth.js"></script>
+</body>
+
+</html>
