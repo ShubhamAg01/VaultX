@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VaultX — Secure Receive</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" href="/favicon.svg" />
+    <link rel="stylesheet" href="/css/style.css" />
+</head>
+
+<body>
+    <div class="auth-page">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <img src="/logo.svg" height="26" alt="VaultX" />
+                </div>
+                <h1 class="auth-title">Secure Message</h1>
+                <p class="auth-subtitle">Decrypted locally in your browser</p>
+            </div>
+
+                <div id="loading-state" style="text-align:center;padding:28px 20px;">
+                    <span class="spinner"></span>
+                    <p class="text-muted mt-4 text-sm">Decrypting payload with link key…</p>
+                </div>
+
+                <div id="pin-state" class="hidden">
+                    <div class="alert alert-info">
+                        This secret is protected with an additional PIN / passphrase.
+                    </div>
+                    <form id="pin-form" style="margin-top:16px;">
+                        <div class="form-group">
+                            <label for="pin-input">Enter Passphrase or PIN</label>
+                            <input type="password" id="pin-input" placeholder="Enter PIN" required autofocus
+                                style="font-family:var(--font-mono);text-align:center;font-size:16px;letter-spacing:4px;" />
+                        </div>
+                        <div id="pin-error" class="alert alert-error hidden" style="margin-bottom:12px;"></div>
+                        <button type="submit" id="unlock-btn" class="btn btn-primary w-full">
+                            Decrypt Secret
+                        </button>
+                    </form>
+                </div>
+
+                <div id="content-state" class="hidden">
+                    <div class="alert alert-success">Successfully decrypted. The message has been burned from the server.</div>
+                    <div class="form-group">
+                        <label>Decrypted Content</label>
+                        <div style="position:relative;">
+                            <textarea id="secret-display" readonly rows="5"
+                                style="font-family:var(--font-mono);padding-right:48px;font-size:13px;"></textarea>
+                            <button class="btn btn-secondary btn-icon" style="position:absolute;right:8px;top:8px;" onclick="copySecret()"
+                                id="copy-secret-btn" title="Copy to clipboard">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="alert alert-info">Notice: Copy this text now. Navigating away will discard it permanently.</div>
+                </div>
+
+                <div id="error-state" class="hidden">
+                    <div class="alert alert-error" id="error-msg">This link is invalid, expired, or has already been burned.</div>
+                    <a href="/" class="btn btn-secondary w-full" style="margin-top:16px;">Return to VaultX</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+    <script src="/js/icons.js"></script>
+    <script src="/js/crypto.js"></script>
+    <script src="/js/send.js"></script>
+</body>
+
+</html>

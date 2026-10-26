@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VaultX — Secure Send</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" href="/favicon.svg" />
+    <link rel="stylesheet" href="/css/style.css" />
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/dashboard" class="nav-logo">
+            <img src="/logo.svg" height="24" alt="VaultX" />
+        </a>
+        <div class="nav-actions">
+            <a href="/dashboard" class="btn btn-ghost text-sm">← Back to Vault</a>
+        </div>
+    </nav>
+
+    <div class="page-wrapper">
+        <div class="send-container">
+            <div class="auth-card" style="max-width:100%;">
+                <div style="text-align:center;margin-bottom:24px;">
+                    <h1 class="auth-title">Secure Send</h1>
+                    <p class="auth-subtitle">Create an encrypted, self-destructing secret link</p>
+                </div>
+
+                <div class="alert alert-info">
+                    Zero-Knowledge: The decryption key stays in the URL fragment and is never sent to the server.
+                </div>
+
+                <div id="alert-container"></div>
+
+                <div id="send-form-section">
+                    <form id="send-form">
+                        <div class="form-group">
+                            <label for="secret-text">Secret or Password</label>
+                            <textarea id="secret-text" placeholder="Enter sensitive text to share securely…" rows="4" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="expiry-hours">Link Lifetime</label>
+                            <select id="expiry-hours">
+                                <option value="1">1 hour</option>
+                                <option value="24" selected>24 hours</option>
+                                <option value="72">3 days</option>
+                                <option value="168">7 days</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="max-views">Maximum Views</label>
+                            <select id="max-views">
+                                <option value="1" selected>1 view (self-destruct after read)</option>
+                                <option value="3">3 views</option>
+                                <option value="5">5 views</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="send-pin">Optional Passphrase or PIN <span style="font-size:11px;color:var(--text-muted);font-weight:500;">(Prevents link interception)</span></label>
+                            <input type="text" id="send-pin" placeholder="e.g. 7294 or a secret passphrase" autocomplete="off" style="font-family:var(--font-mono);letter-spacing:1px;" />
+                            <p style="font-size:11px;color:var(--text-muted);margin-top:6px;line-height:1.4;">
+                                Transmit this PIN via a separate channel (SMS, signal, or voice). Decryption requires both the link and this PIN.
+                            </p>
+                        </div>
+                        <div style="display:flex;justify-content:center;margin-top:20px;">
+                            <button type="submit" id="send-btn" class="btn btn-primary" style="padding:10px 24px;">
+                                <span id="send-btn-text">Generate Secure Link</span>
+                                <span id="send-btn-spinner" class="spinner hidden"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="link-section" class="hidden">
+                    <div class="alert alert-success">Secure link created. Copy and share it with your recipient.</div>
+                    <div class="link-display" id="generated-link" onclick="copyLink()" title="Click to copy link"></div>
+                    <div style="display:flex;gap:10px;">
+                        <button class="btn btn-primary" style="flex:1;" onclick="copyLink()" id="copy-btn">Copy Link</button>
+                        <button class="btn btn-secondary" style="flex:1;" onclick="resetSend()">Create Another</button>
+                    </div>
+                    <p class="text-sm text-muted text-center mt-5" style="margin-top:20px;text-align:center;">Notice: This secret link cannot be viewed again once burned.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+    <script src="/js/icons.js"></script>
+    <script src="/js/crypto.js"></script>
+    <script src="/js/send.js"></script>
+</body>
+
+</html>
