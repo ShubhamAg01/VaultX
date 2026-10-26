@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>VaultX — My Vault</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="alternate icon" href="/favicon.svg" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+
+<body>
+  <!-- Minimal Navbar -->
+  <nav class="navbar">
+    <a href="/dashboard" class="nav-logo">
+      <img src="/logo.svg" height="24" alt="VaultX" />
+    </a>
+    <div class="nav-actions">
+      <a id="admin-link" href="/admin" class="btn btn-ghost" style="display:none;">Admin</a>
+      <a href="/send" class="btn btn-ghost">Send Secret</a>
+      <div class="nav-user">
+        <div class="nav-avatar" id="u-avatar">?</div>
+        <span id="u-name" style="font-size:12px;font-weight:500;">…</span>
+      </div>
+      <button onclick="handleLogout()" class="btn btn-ghost" title="Sign out">Log out</button>
+    </div>
+  </nav>
+
+  <main class="page-wrapper">
+    <!-- Header -->
+    <div class="dashboard-header">
+      <div>
+        <h1 class="dashboard-title">My Vault</h1>
+        <p class="dashboard-subtitle" id="vault-sub">Loading credentials…</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-secondary" onclick="openToolsModal('export')" title="Import or Export Vault">Backup / Import</button>
+        <button class="btn btn-secondary" onclick="openAuditModal()" title="Run Security Audit">Security Audit</button>
+        <button class="btn btn-secondary" onclick="openGenerator()">Generator</button>
+        <button class="btn btn-primary" onclick="openAdd()">+ Add Credential</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number" id="s-count">0</div>
+        <div class="stat-label">Stored Credentials</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" style="font-size:18px;">AES-256-GCM</div>
+        <div class="stat-label">Zero-Knowledge Cipher</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" style="font-size:18px;">PBKDF2 100k</div>
+        <div class="stat-label">Key Derivation Rounds</div>
+      </div>
+      <div class="stat-card" style="cursor:pointer;" onclick="open2FAModal()" title="Configure Two-Factor Authentication">
+        <div class="stat-number" id="s-2fa" style="font-size:18px;">…</div>
+        <div class="stat-label">2FA Status (Click to configure)</div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="vault-toolbar">
+      <div class="search-box">
+        <span class="search-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </span>
+        <input type="search" placeholder="Search by site, username, URL, or notes…" oninput="filterVault(this.value)" id="search-inp" autocomplete="off" />
+      </div>
+      <div class="filter-tabs" id="cat-tabs" style="margin-top:14px;">
+        <button class="btn-tab active" onclick="setCategoryFilter('all')">All (<span id="c-all">0</span>)</button>
+        <button class="btn-tab" onclick="setCategoryFilter('favorites')">★ Favorites (<span id="c-fav">0</span>)</button>
+        <button class="btn-tab" onclick="setCategoryFilter('Logins')">Logins (<span id="c-logins">0</span>)</button>
+        <button class="btn-tab" onclick="setCategoryFilter('Cards')">Cards (<span id="c-cards">0</span>)</button>
+        <button class="btn-tab" onclick="setCategoryFilter('Notes')">Notes (<span id="c-notes">0</span>)</button>
+        <button class="btn-tab" onclick="setCategoryFilter('Servers')">Servers (<span id="c-servers">0</span>)</button>
+      </div>
+    </div>
+
+    <!-- Vault Grid -->
+    <div class="vault-grid" id="vault-grid">
+      <div class="empty">
+        <div class="empty-ico">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div class="empty-title">Loading vault…</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Add/Edit Modal -->
+  <div class="modal-overlay" id="pw-modal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 class="modal-title" id="modal-ttl">Add Credential</h3>
+        <button class="modal-close" onclick="closeModal('pw-modal')">✕</button>
+      </div>
+      <form id="pw-form">
+        <input type="hidden" id="edit-id" />
+        <div style="display:flex;gap:12px;">
+          <div class="form-group" style="flex:1;">
+            <label for="f-site">Service or Site Name *</label>
+            <input id="f-site" type="text" placeholder="e.g. GitHub" required maxlength="100" />
+          </div>
+          <div class="form-group" style="width:140px;">
+            <label for="f-cat">Category</label>
+            <select id="f-cat">
+              <option value="Logins" selected>Logins</option>
+              <option value="Cards">Cards</option>
+              <option value="Notes">Notes</option>
+              <option value="Servers">Servers</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;">
+          <div class="form-group" style="flex:1;">
+            <label for="f-url">Website URL</label>
+            <input id="f-url" type="url" placeholder="https://github.com" />
+          </div>
+          <div class="form-group" style="width:140px;">
+            <label for="f-fav">Favorite</label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:9px 12px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-weight:500;height:38px;color:var(--text);user-select:none;transition:var(--transition);">
+              <input type="checkbox" id="f-fav" style="margin:0;width:15px;height:15px;cursor:pointer;" />
+              <span>★ Favorite</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="f-user">Username or Email</label>
+          <input id="f-user" type="text" placeholder="alex@example.com" autocomplete="off" />
+        </div>
+        <div class="form-group">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <label for="f-pw" style="margin-bottom:0;">Password *</label>
+            <div style="display:flex;gap:8px;">
+              <button type="button" class="btn btn-ghost" style="padding:2px 8px;font-size:11px;" onclick="checkCurrentPwned()" id="check-pwned-btn">Check Leaks</button>
+              <button type="button" class="btn btn-ghost" style="padding:2px 8px;font-size:11px;" onclick="fillGenerated()">Auto-Generate</button>
+            </div>
+          </div>
+          <div class="input-wrap">
+            <input id="f-pw" type="password" placeholder="Enter or generate password" required autocomplete="new-password" oninput="mStrength(this.value); resetPwnedStatus();" />
+            <button type="button" class="eye-btn" onclick="toggleMPw()" title="Toggle visibility">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="strength-row">
+            <div class="s-bar-wrap">
+              <div class="s-bar" id="m-sbar"></div>
+            </div>
+          </div>
+          <div id="pw-breach-indicator" style="font-size:11px;margin-top:5px;display:none;"></div>
+        </div>
+        <div class="form-group">
+          <label for="f-notes">Secure Notes</label>
+          <textarea id="f-notes" rows="2" placeholder="Optional private notes or recovery codes…"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="openGenerator()">Custom Generator</button>
+          <button type="submit" class="btn btn-primary" id="save-btn">
+            <span id="save-lbl">Save Credential</span>
+            <span id="save-spin" class="spinner" style="display:none;"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Password Generator Modal -->
+  <div class="modal-overlay" id="gen-modal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 class="modal-title">Password Generator</h3>
+        <button class="modal-close" onclick="closeModal('gen-modal')">✕</button>
+      </div>
+      <div style="background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;font-family:var(--font-mono);font-size:14px;word-break:break-all;margin-bottom:16px;text-align:center;letter-spacing:1px;" id="gen-out">
+        Click Regenerate
+      </div>
+      <div class="form-group">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-bottom:6px;">
+          <span>Length</span>
+          <span id="len-n" style="font-family:var(--font-mono);color:var(--text);">20</span>
+        </div>
+        <input type="range" id="gen-len" min="8" max="64" value="20" oninput="document.getElementById('len-n').textContent=this.value; genPw();" style="width:100%;accent-color:var(--text);" />
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin:16px 0;font-size:13px;">
+        <label style="cursor:pointer;"><input type="checkbox" id="g-upper" checked onchange="genPw()" /> Uppercase Letters (A-Z)</label>
+        <label style="cursor:pointer;"><input type="checkbox" id="g-nums" checked onchange="genPw()" /> Numbers (0-9)</label>
+        <label style="cursor:pointer;"><input type="checkbox" id="g-sym" checked onchange="genPw()" /> Special Symbols (!@#$...)</label>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="genPw()">Regenerate</button>
+        <button type="button" class="btn btn-secondary" onclick="useGenInForm()">Insert into Form</button>
+        <button type="button" class="btn btn-primary" onclick="copyGenOut()">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Backup & Import Modal -->
+  <div class="modal-overlay" id="tools-modal">
+    <div class="modal" style="max-width:520px;">
+      <div class="modal-head">
+        <h3 class="modal-title">Backup &amp; Import</h3>
+        <button class="modal-close" onclick="closeModal('tools-modal')">✕</button>
+      </div>
+      <div class="tab-nav">
+        <button class="tab-nav-btn active" id="tab-export-btn" onclick="switchToolsTab('export')">Export Vault</button>
+        <button class="tab-nav-btn" id="tab-import-btn" onclick="switchToolsTab('import')">Import Credentials</button>
+      </div>
+      <div id="panel-export">
+        <p class="text-sm text-muted" style="margin-bottom:16px;">Download your decrypted vault for local backup or migrating to another password manager.</p>
+        <div style="display:flex;gap:10px;flex-direction:column;">
+          <button class="btn btn-secondary" onclick="exportVaultJSON()" style="justify-content:flex-start;padding:12px 16px;">
+            <span style="font-weight:600;">Download JSON Backup (.json)</span>
+            <span class="text-xs text-muted" style="margin-left:auto;">Full fidelity backup</span>
+          </button>
+          <button class="btn btn-secondary" onclick="exportVaultCSV()" style="justify-content:flex-start;padding:12px 16px;">
+            <span style="font-weight:600;">Download CSV Table (.csv)</span>
+            <span class="text-xs text-muted" style="margin-left:auto;">Bitwarden / 1Password compatible</span>
+          </button>
+        </div>
+        <p class="text-xs text-muted mt-4" style="line-height:1.4;">Notice: Keep exported files secure. Decrypted backups contain plaintext credentials.</p>
+      </div>
+      <div id="panel-import" class="hidden">
+        <p class="text-sm text-muted" style="margin-bottom:14px;">Import credentials from CSV or JSON files (supports Bitwarden, 1Password, Chrome, or VaultX).</p>
+        <div class="drop-zone" onclick="document.getElementById('import-file-input').click()">
+          <input type="file" id="import-file-input" accept=".csv,.json" style="display:none;" onchange="handleFileSelect(event)" />
+          <div style="font-weight:500;margin-bottom:4px;">Click to select file (.csv, .json)</div>
+          <div class="text-xs text-muted">All credentials are encrypted locally in your browser before upload</div>
+        </div>
+        <div id="import-preview" class="hidden mt-4">
+          <div class="alert alert-info" id="import-preview-text">Ready to import</div>
+          <button class="btn btn-primary w-full mt-2" id="start-import-btn" onclick="executeImport()">
+            <span id="import-btn-text">Import Credentials</span>
+            <span class="spinner hidden" id="import-spinner"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Security Audit Modal -->
+  <div class="modal-overlay" id="audit-modal">
+    <div class="modal" style="max-width:620px;">
+      <div class="modal-head">
+        <h3 class="modal-title">Vault Security Health Audit</h3>
+        <button class="modal-close" onclick="closeModal('audit-modal')">✕</button>
+      </div>
+      <p class="text-sm text-muted" style="margin-bottom:16px;">
+        Scans your stored credentials for breaches (via Zero-Knowledge k-Anonymity), password reuse, and weak keys without exposing passwords.
+      </p>
+      <div class="audit-metrics-grid">
+        <div class="audit-metric-card">
+          <div class="audit-val" id="audit-leaked" style="color:#f87171;">0</div>
+          <div class="audit-lbl">Breached / Leaked</div>
+        </div>
+        <div class="audit-metric-card">
+          <div class="audit-val" id="audit-reused" style="color:#fbbf24;">0</div>
+          <div class="audit-lbl">Reused Passwords</div>
+        </div>
+        <div class="audit-metric-card">
+          <div class="audit-val" id="audit-weak" style="color:#60a5fa;">0</div>
+          <div class="audit-lbl">Weak (&lt; 12 chars)</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <span class="text-sm text-muted" id="audit-status">Click Run Scan to check entire vault</span>
+        <button class="btn btn-primary" onclick="runVaultAudit()" id="run-audit-btn">Run Scan</button>
+      </div>
+      <div id="audit-results" style="max-height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-subtle);">
+        <div style="text-align:center;padding:24px;color:var(--text-muted);font-size:13px;">No scan run yet</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2FA Modal -->
+  <div class="modal-overlay" id="twofa-modal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 class="modal-title">Two-Factor Authentication</h3>
+        <button class="modal-close" onclick="closeModal('twofa-modal')">✕</button>
+      </div>
+      <div id="2fa-content"></div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+  <script src="/js/icons.js"></script>
+  <script src="/js/crypto.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+
+</html>
