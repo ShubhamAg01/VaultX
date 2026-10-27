@@ -1,0 +1,17 @@
+services:
+  vaultx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: vaultx:latest
+    container_name: vaultx_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - JWT_SECRET=change_this_to_a_long_random_secret_in_production
+      - DB_PATH=/app/data/vault.db
+    volumes:
+      - ./data:/app/data
