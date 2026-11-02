@@ -61,7 +61,7 @@ async function deriveKeys(masterPassword, saltHex) {
 }
 
 /**
- * Encrypts an entire vault item object { site_name, site_url, username, password, notes }
+ * Encrypts an entire vault item object { site_name, site_url, username, email, password, notes }
  */
 async function encryptVaultItem(vaultKey, itemObj) {
     const iv = crypto.getRandomValues(new Uint8Array(12));

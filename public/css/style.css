@@ -525,7 +525,7 @@ textarea::placeholder {
   color: var(--text-dim);
   font-size: 11px;
   font-weight: 500;
-  min-width: 32px;
+  min-width: 36px;
 }
 
 .v-val {

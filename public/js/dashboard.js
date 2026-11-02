@@ -68,6 +68,7 @@ async function loadVault() {
                 site_name: dec.site_name || '',
                 site_url: dec.site_url || '',
                 username: dec.username || '',
+                email: dec.email || '',
                 password: dec.password || '',
                 notes: dec.notes || '',
                 category: dec.category || 'Logins',
@@ -82,6 +83,7 @@ async function loadVault() {
                 site_name: '[Decryption Error]',
                 site_url: '',
                 username: '',
+                email: '',
                 password: '',
                 notes: 'Decryption failed for this item.',
                 category: 'Other',
@@ -146,6 +148,7 @@ function applyFilter() {
         filtered = filtered.filter(e =>
             (e.site_name || '').toLowerCase().includes(currentSearch) ||
             (e.username || '').toLowerCase().includes(currentSearch) ||
+            (e.email || '').toLowerCase().includes(currentSearch) ||
             (e.site_url || '').toLowerCase().includes(currentSearch) ||
             (e.notes || '').toLowerCase().includes(currentSearch)
         );
@@ -192,6 +195,11 @@ function renderVault(entries) {
           <span class="v-val">${esc(e.username)}</span>
           <button class="v-action" onclick="cpUser(${e.id}, this)" title="Copy Username">${ICONS.copy}</button>
         </div>` : ''}
+        ${e.email ? `<div class="v-field">
+          <span class="v-lbl">Email</span>
+          <span class="v-val">${esc(e.email)}</span>
+          <button class="v-action" onclick="cpEmail(${e.id}, this)" title="Copy Email">${ICONS.copy}</button>
+        </div>` : ''}
         <div class="v-field">
           <span class="v-lbl">Pass</span>
           <span class="v-val" id="pv-${e.id}" style="font-family:var(--font-mono);">${masked}</span>
@@ -220,6 +228,7 @@ async function toggleFavorite(id) {
             site_name: e.site_name,
             site_url: e.site_url,
             username: e.username,
+            email: e.email || '',
             password: e.password,
             notes: e.notes,
             category: e.category || 'Logins',
@@ -258,6 +267,11 @@ function togglePw(id, btn) {
 function cpUser(id, btn) {
     const entry = allEntries.find(x => x.id === id);
     if (entry && entry.username) cp(entry.username, btn);
+}
+
+function cpEmail(id, btn) {
+    const entry = allEntries.find(x => x.id === id);
+    if (entry && entry.email) cp(entry.email, btn);
 }
 
 function cpPw(id, btn) {
@@ -304,6 +318,8 @@ function openAdd() {
     document.getElementById('save-lbl').textContent = 'Save Credential';
     document.getElementById('pw-form').reset();
     document.getElementById('edit-id').value = '';
+    document.getElementById('f-user').value = '';
+    document.getElementById('f-email').value = '';
     document.getElementById('m-sbar').style.width = '0';
     document.getElementById('f-cat').value = 'Logins';
     document.getElementById('f-fav').checked = false;
@@ -321,6 +337,7 @@ function openEdit(id) {
     document.getElementById('f-site').value = e.site_name || '';
     document.getElementById('f-url').value = e.site_url || '';
     document.getElementById('f-user').value = e.username || '';
+    document.getElementById('f-email').value = e.email || '';
     document.getElementById('f-pw').value = e.password || '';
     document.getElementById('f-notes').value = e.notes || '';
     document.getElementById('f-cat').value = e.category || 'Logins';
@@ -360,6 +377,7 @@ document.getElementById('pw-form')?.addEventListener('submit', async e => {
     const site_name = document.getElementById('f-site').value.trim();
     const site_url = document.getElementById('f-url').value.trim();
     const username = document.getElementById('f-user').value.trim();
+    const email = document.getElementById('f-email').value.trim();
     const password = document.getElementById('f-pw').value;
     const notes = document.getElementById('f-notes').value.trim();
     const category = document.getElementById('f-cat').value || 'Logins';
@@ -370,6 +388,7 @@ document.getElementById('pw-form')?.addEventListener('submit', async e => {
             site_name,
             site_url,
             username,
+            email,
             password,
             notes,
             category,
@@ -585,7 +604,7 @@ async function runVaultAudit() {
             <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);">
                 <div>
                     <div style="font-weight:600;font-size:13px;color:var(--text);">${esc(entry.site_name)}</div>
-                    <div style="font-size:11px;color:var(--text-muted);">${esc(entry.username || 'No username')}</div>
+                    <div style="font-size:11px;color:var(--text-muted);">${esc(entry.username || entry.email || 'No username')}</div>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;">
                     ${issues.join(' ')}
@@ -624,6 +643,7 @@ function exportVaultJSON() {
             site_name: e.site_name,
             site_url: e.site_url,
             username: e.username,
+            email: e.email || '',
             password: e.password,
             notes: e.notes,
             category: e.category || 'Logins',
@@ -637,11 +657,12 @@ function exportVaultJSON() {
 
 function exportVaultCSV() {
     if (!allEntries.length) { toast('Vault is empty', 'error'); return; }
-    const headers = ['Title', 'URL', 'Username', 'Password', 'Notes', 'Category', 'Favorite'];
+    const headers = ['Title', 'URL', 'Username', 'Email', 'Password', 'Notes', 'Category', 'Favorite'];
     const rows = allEntries.map(e => [
         escapeCSV(e.site_name),
         escapeCSV(e.site_url),
         escapeCSV(e.username),
+        escapeCSV(e.email || ''),
         escapeCSV(e.password),
         escapeCSV(e.notes),
         escapeCSV(e.category || 'Logins'),
@@ -690,6 +711,7 @@ function handleFileSelect(e) {
                     site_name: item.site_name || item.title || item.name || 'Untitled',
                     site_url: item.site_url || item.url || item.login_uri || '',
                     username: item.username || item.login_username || '',
+                    email: item.email || item.login_email || '',
                     password: item.password || item.login_password || '',
                     notes: item.notes || item.note || '',
                     category: item.category || 'Logins',
@@ -722,7 +744,8 @@ function parseCSVToItems(text) {
 
     const titleIdx = headers.findIndex(h => ['title', 'name', 'site', 'service'].includes(h));
     const urlIdx = headers.findIndex(h => ['url', 'login_uri', 'website'].includes(h));
-    const userIdx = headers.findIndex(h => ['username', 'login_username', 'email', 'user'].includes(h));
+    const userIdx = headers.findIndex(h => ['username', 'login_username', 'user'].includes(h));
+    const emailIdx = headers.findIndex(h => ['email', 'mail', 'e-mail'].includes(h));
     const passIdx = headers.findIndex(h => ['password', 'login_password', 'pass'].includes(h));
     const noteIdx = headers.findIndex(h => ['notes', 'note', 'comments'].includes(h));
     const catIdx = headers.findIndex(h => ['category', 'folder', 'group'].includes(h));
@@ -737,6 +760,7 @@ function parseCSVToItems(text) {
             site_name,
             site_url: urlIdx !== -1 ? cols[urlIdx] || '' : '',
             username: userIdx !== -1 ? cols[userIdx] || '' : '',
+            email: emailIdx !== -1 ? cols[emailIdx] || '' : '',
             password,
             notes: noteIdx !== -1 ? cols[noteIdx] || '' : '',
             category: catIdx !== -1 ? cols[catIdx] || 'Logins' : 'Logins',

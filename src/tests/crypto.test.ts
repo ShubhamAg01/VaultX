@@ -32,6 +32,7 @@ describe('Zero-Knowledge Cryptographic Derivation Tests', () => {
             site_name: 'GitHub',
             site_url: 'https://github.com',
             username: 'developer',
+            email: 'dev@example.com',
             password: 'CorrectHorseBatteryStaple99$',
             notes: '2FA Backup codes stored in hardware token'
         });
@@ -57,5 +58,6 @@ describe('Zero-Knowledge Cryptographic Derivation Tests', () => {
         expect(parsed.site_name).toBe('GitHub');
         expect(parsed.password).toBe('CorrectHorseBatteryStaple99$');
         expect(parsed.username).toBe('developer');
+        expect(parsed.email).toBe('dev@example.com');
     });
 });
