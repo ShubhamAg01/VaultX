@@ -745,7 +745,7 @@ function parseCSVToItems(text) {
     const titleIdx = headers.findIndex(h => ['title', 'name', 'site', 'service'].includes(h));
     const urlIdx = headers.findIndex(h => ['url', 'login_uri', 'website'].includes(h));
     const userIdx = headers.findIndex(h => ['username', 'login_username', 'user'].includes(h));
-    const emailIdx = headers.findIndex(h => ['email', 'mail', 'e-mail'].includes(h));
+    const emailIdx = headers.findIndex(h => ['email', 'login_email', 'mail', 'e-mail'].includes(h));
     const passIdx = headers.findIndex(h => ['password', 'login_password', 'pass'].includes(h));
     const noteIdx = headers.findIndex(h => ['notes', 'note', 'comments'].includes(h));
     const catIdx = headers.findIndex(h => ['category', 'folder', 'group'].includes(h));
